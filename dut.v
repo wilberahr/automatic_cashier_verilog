@@ -84,6 +84,18 @@ module cajero(  clock,
         cuenta_bit = proxima_bit;
         cuenta_digito = proximo_digito;
 
+        case (estado_actual)
+
+            idle:   
+                begin
+                    if(tarjeta_recibida == 1) begin
+                        proximo_estado = recibiendo_pin;
+                    end //end if
+                    else begin
+                        proximo_estado = idle;
+                    end //end else
+                end //end idle
+        endcase
     end //end always @(*)
 
 endmodule // endmodule cajero
