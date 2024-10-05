@@ -42,10 +42,6 @@ module cajero(  clock,
     reg [1:0] cuenta_digito;
     reg [1:0] proximo_digito;
 
-    //Declaracion de parametros locales
-    //localparam 4bits = 3;
-    //localparam 16bits = 15; 
-
     //Declaracion de estados
     localparam idle             = 5'b00001;
     localparam recibiendo_pin   = 5'b00010;
