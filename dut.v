@@ -32,4 +32,25 @@ module cajero(  tarjeta_recibida,
     localparam 4bits = 3;
     localparam 16bits = 15; 
 
+    //Declaracion de estados
+    localparam idle             = 5'b00001;
+    localparam recibiendo_pin   = 5'b00010;
+    localparam comparar_pin     = 5'b00100;
+    localparam transaccion      = 5'b01000;
+    localparam bloqueo          = 5'010000;
+
+    //Declaracion de flipflops
+    always @(posedge clk) begin
+        if (rst) begin 
+            estado_actual <= 5'b00001; 
+            cuenta_actual <= 2'b00;    
+        end //end if
+        else begin
+            estado_actual <= proximo_estado;
+            cuenta_actual <= proxima_cuenta;
+        end //end else        
+    end //end always @(posedge clk)
+
+
+
 endmodule // endmodule cajero
