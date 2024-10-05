@@ -1,10 +1,12 @@
-module cajero(  tarjeta_recibida, 
+module cajero(  clock,
+                reset,
+                tarjeta_recibida, 
                 tipo_trans, 
                 digito_stb, 
-                digito[3:0], 
-                pin[15:0], 
-                monto_stb
-                balance_actualizado[31:0],
+                digito, 
+                pin, 
+                monto_stb,
+                balance_actualizado,
                 entregar_dinrero,
                 pin_incorrecto,
                 advertencia,
@@ -13,6 +15,8 @@ module cajero(  tarjeta_recibida,
                 );
 
     //Declaracion de entradas
+    input wire clock;
+    input wire reset;
     input wire tarjeta_recibida; 
     input wire tipo_trans; 
     input wire digito_stb; 
@@ -28,29 +32,48 @@ module cajero(  tarjeta_recibida,
     output reg bloqueo;
     output reg fondos_insuficientes;
 
+    //Declaracion de regstros internos
+    reg [4:0] estado_actual;
+    reg [4:0] proximo_estado;
+
+    reg [1:0] cuenta_bit;
+    reg [1:0] proxima_bit;
+
+    reg [1:0] cuenta_digito;
+    reg [1:0] proximo_digito;
+
     //Declaracion de parametros locales
-    localparam 4bits = 3;
-    localparam 16bits = 15; 
+    //localparam 4bits = 3;
+    //localparam 16bits = 15; 
 
     //Declaracion de estados
     localparam idle             = 5'b00001;
     localparam recibiendo_pin   = 5'b00010;
     localparam comparar_pin     = 5'b00100;
     localparam transaccion      = 5'b01000;
-    localparam bloqueo          = 5'010000;
+    localparam bloqueo_cajero   = 5'b10000;
 
     //Declaracion de flipflops
-    always @(posedge clk) begin
-        if (rst) begin 
+    always @(posedge clock) begin
+        if (reset) begin 
             estado_actual <= 5'b00001; 
-            cuenta_actual <= 2'b00;    
+            cuenta_bit <= 2'b00;
+            cuenta_digito <= 2'b00;
         end //end if
         else begin
             estado_actual <= proximo_estado;
-            cuenta_actual <= proxima_cuenta;
+            cuenta_bit <= proxima_bit;
+            cuenta_digito <= proximo_digito;
         end //end else        
-    end //end always @(posedge clk)
+    end //end always @(posedge clock)
 
+    //Declaracion de logica combinacional
+    always @(*) begin
 
+        estado_actual = proximo_estado;
+        cuenta_bit = proxima_bit;
+        cuenta_digito = proximo_digito;
+
+    end //end always @(*)
 
 endmodule // endmodule cajero
