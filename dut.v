@@ -49,6 +49,20 @@ module cajero(  clock,
     localparam transaccion      = 5'b01000;
     localparam bloqueo_cajero   = 5'b10000;
 
+    //Declaracion de digitos
+    localparam uno =    4'b0001;
+    localparam dos =    4'b0010;
+    localparam tres =   4'b0011;
+    localparam cuatro = 4'b0100;
+    localparam cinco =  4'b0101;
+    localparam seis =   4'b0110;
+    localparam siete =  4'b0111;
+    localparam ocho =   4'b1000;
+    localparam nueve =  4'b1001;
+    localparam cero =   4'b0000;
+    localparam vacio =  4'b1111;  
+
+
     //Declaracion de flipflops
     always @(posedge clock) begin
         if (reset) begin 
