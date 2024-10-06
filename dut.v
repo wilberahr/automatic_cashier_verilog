@@ -29,7 +29,7 @@ module cajero(  clock,
     input wire monto_stb;
 
     //Declaraacion de salidas
-    output reg [31:0] balance_actualizado;
+    output reg balance_actualizado;
     output reg entregar_dinero;
     output reg pin_incorrecto;
     output reg advertencia;
@@ -183,6 +183,11 @@ module cajero(  clock,
                     end //else
                     proximo_estado = idle;
                 end // transaccion
+            bloqueo_cajero:
+                begin
+                    bloqueo = 1'b1;
+                    proximo_estado = bloqueo;
+                end
         endcase
     end //end always @(*)
 
