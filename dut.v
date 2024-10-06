@@ -4,10 +4,12 @@ module cajero(  clock,
                 tipo_trans, 
                 digito_stb, 
                 digito, 
-                pin, 
+                pin,
+                balance_inicial, 
+                monto,
                 monto_stb,
                 balance_actualizado,
-                entregar_dinrero,
+                entregar_dinero,
                 pin_incorrecto,
                 advertencia,
                 bloqueo,
@@ -22,11 +24,13 @@ module cajero(  clock,
     input wire digito_stb; 
     input wire [3:0] digito; 
     input wire [15:0] pin;
+    input wire [63:0] balance_inicial;
+    input wire [31:0] monto;
     input wire monto_stb;
 
     //Declaraacion de salidas
     output reg [31:0] balance_actualizado;
-    output reg entregar_dinrero;
+    output reg entregar_dinero;
     output reg pin_incorrecto;
     output reg advertencia;
     output reg bloqueo;
@@ -44,7 +48,11 @@ module cajero(  clock,
 
     reg [15:0] pin_recibido;
 
+    reg [63:0] balance;
+    
     integer cuenta_digito_bit;
+    localparam deposito = 1'b0;
+    localparam retiro = 1'b1;
 
     //Declaracion de estados
     localparam idle             = 5'b00001;
@@ -157,6 +165,24 @@ module cajero(  clock,
                         end //end else if
                     end //end else
                 end //comparar_pin
+
+            transaccion:
+                begin
+                    //Si tipo _trans == 0, es un deposito
+                    if(tipo_trans == deposito) begin
+                        balance = balance_inicial + monto;
+                        balance_actualizado = 1'b1;
+                    end // if(tipo_trans == deposito)
+                    else begin
+                        //Si tipo _trans == 1, es un retiro Y monto es menor al balance inicial
+                        if(tipo_trans == retiro && monto <= balance_inicial) begin
+                            balance = balance_inicial - monto;
+                            balance_actualizado = 1'b1;
+                        end // if(tipo_trans == retiro && monto <= balance_inicial)
+                        else fondos_insuficientes = 1'b1;
+                    end //else
+                    proximo_estado = idle;
+                end // transaccion
         endcase
     end //end always @(*)
 
