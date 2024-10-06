@@ -100,6 +100,14 @@ module cajero(  clock,
 
             idle:   
                 begin
+                    //Todas las salidas en bajo
+                    balance_actualizado = 1'b0;
+                    entregar_dinero = 1'b0;
+                    pin_incorrecto = 1'b0;
+                    advertencia = 1'b0;
+                    bloqueo = 1'b0;
+                    fondos_insuficientes = 1'b0;
+
                     if(tarjeta_recibida == 1) begin
                         proximo_estado = recibiendo_pin;
                     end // if
