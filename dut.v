@@ -182,6 +182,8 @@ module cajero(  clock,
                     bloqueo = 1'b1;
                     proximo_estado = bloqueo;
                 end
+            // Se programa el estado "idle" como el default    
+            default: proximo_estado = idle;
         endcase
     end //end always @(*)
 
