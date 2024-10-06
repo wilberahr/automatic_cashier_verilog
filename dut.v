@@ -36,11 +36,12 @@ module cajero(  clock,
     reg [4:0] estado_actual;
     reg [4:0] proximo_estado;
 
-    reg [1:0] cuenta_bit;
-    reg [1:0] proxima_bit;
+    reg [1:0] cuenta_pin_bit;
+    reg [1:0] proxima_cuenta_pin_bit;
 
-    reg [1:0] cuenta_digito;
-    reg [1:0] proximo_digito;
+    reg [15:0] pin_recibido;
+
+    integer cuenta_digito_bit;
 
     //Declaracion de estados
     localparam idle             = 5'b00001;
@@ -67,13 +68,11 @@ module cajero(  clock,
     always @(posedge clock) begin
         if (reset) begin 
             estado_actual <= 5'b00001; 
-            cuenta_bit <= 2'b00;
-            cuenta_digito <= 2'b00;
+            cuenta_pin_bit <= 2'b00;
         end //end if
         else begin
             estado_actual <= proximo_estado;
-            cuenta_bit <= proxima_bit;
-            cuenta_digito <= proximo_digito;
+            cuenta_pin_bit <= proxima_cuenta_pin_bit;
         end //end else        
     end //end always @(posedge clock)
 
@@ -81,8 +80,7 @@ module cajero(  clock,
     always @(*) begin
 
         estado_actual = proximo_estado;
-        cuenta_bit = proxima_bit;
-        cuenta_digito = proximo_digito;
+        cuenta_pin_bit = proxima_cuenta_pin_bit;
 
         case (estado_actual)
 
@@ -95,6 +93,35 @@ module cajero(  clock,
                         proximo_estado = idle;
                     end //end else
                 end //end idle
+
+            recibiendo_pin:
+                begin
+                    //Si todavía no se ha ingresado todo el pin
+                    if(cuenta_pin_bit < 16) begin
+                        if(digito_stb == 1'b0) begin
+                            proximo_estado = recibiendo_pin;
+                        end //end if
+                        else begin
+                            //Se recorre el digito entrante y se asigna al bit al registo de pin recibido, con los digitos anteriores
+                            for(cuenta_digito_bit = 0; cuenta_digito_bit<4; cuenta_digito_bit = cuenta_digito_bit + 1) begin
+                                pin_recibido[cuenta_pin_bit + cuenta_digito_bit] = digito[cuenta_digito_bit];
+                            end
+                            //Se suma 4 bits a la cuenta de bits en el pin
+                            proxima_cuenta_pin_bit = cuenta_pin_bit + 4;
+                            proximo_estado = recibiendo_pin;
+
+                        
+                        end //end else
+                    end
+                    //Si ya se ingreso todo el pin
+                    else begin
+                        //Se reinicia el contador de digitos
+                        proxima_cuenta_pin_bit = 0;
+                        proximo_estado = comparar_pin;
+                    end
+
+                end//end recibiendo_pin
+
         endcase
     end //end always @(*)
 
