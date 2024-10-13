@@ -16,24 +16,24 @@ module tester(  clock,
                 fondos_insuficientes);
 
     //Declaracion de salidas
-    output wire clock;
-    output wire reset;
-    output wire tarjeta_recibida; 
-    output wire tipo_trans; 
-    output wire digito_stb; 
-    output wire [3:0] digito; 
-    output wire [15:0] pin;
-    output wire [63:0] balance_inicial;
-    output wire [31:0] monto;
-    output wire monto_stb;
+    output reg clock;
+    output reg reset;
+    output reg tarjeta_recibida; 
+    output reg tipo_trans; 
+    output reg digito_stb; 
+    output reg [3:0] digito; 
+    output reg [15:0] pin;
+    output reg [63:0] balance_inicial;
+    output reg [31:0] monto;
+    output reg monto_stb;
 
     //Declaraacion de entradas
-    input reg balance_actualizado;
-    input reg entregar_dinero;
-    input reg pin_incorrecto;
-    input reg advertencia;
-    input reg bloqueo;
-    input reg fondos_insuficientes;
+    input wire balance_actualizado;
+    input wire entregar_dinero;
+    input wire pin_incorrecto;
+    input wire advertencia;
+    input wire bloqueo;
+    input wire fondos_insuficientes;
 
 
     
