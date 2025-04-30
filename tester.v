@@ -54,24 +54,3 @@ module tester(  clock,
     end
     
 endmodule
-
-task prueba(    output reg tarjeta_recibida, 
-                output reg tipo_trans, 
-                output reg digito_stb, 
-                output reg [3:0] digito, 
-                output reg [15:0] pin,
-                output reg [63:0] balance_inicial,
-                output reg [31:0] monto,
-                output reg monto_stb); 
-    fork
-        tarjeta_recibida = ; 
-        tipo_trans; 
-        digito_stb; 
-        digito; 
-        pin;
-        balance_inicial;
-        monto;
-        monto_stb;
-    join
-
-endtask 
