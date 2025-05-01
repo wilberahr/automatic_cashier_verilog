@@ -2,7 +2,13 @@ module dut (
     input wire clk,
     input wire reset,
     input wire tarjeta_recibida,
-    output reg fin
+    input wire tipo_trans,
+    input wire [31:0] monto,
+    input wire [63:0] balance_inicial,
+    output reg [63:0] balance_actualizado,
+    output reg balance_stb,
+    output reg entregar_dinero,
+    output reg fondos_insuficientes
 );
 
    // Declaracion de estados
@@ -10,6 +16,14 @@ module dut (
     localparam recibiendo_pin   = 5'b00010;
     localparam transaccion      = 5'b00100;
 
+    // Declaracion de parametros
+    localparam deposito        = 1'b0;
+    localparam retiro          = 1'b1;    
+
+    // Declaracion de variables de estado y proximo estado
+    reg [4:0] estado_actual;
+    reg [4:0] proximo_estado;
+    
     // Declaracion de estados
     always @(posedge clk) begin
         if (~reset) begin
@@ -27,7 +41,9 @@ module dut (
         case (estado_actual)
             idle: begin
                 // Salidas en bajo
-                fin = 0;
+                balance_stb = 0;
+                entregar_dinero = 0;
+                fondos_insuficientes = 0;
                 // Si se recibe la tarjeta, pasar al estado de recibiendo_pin
                 // Si no, permanecer en el estado idle
                 if (tarjeta_recibida) 
@@ -39,8 +55,28 @@ module dut (
                 proximo_estado = transaccion;
             end
             transaccion: begin
-                fin = 1;
-                proximo_estado = idle;
+                
+                if (tipo_trans == retiro) begin
+                    // Realizar deposito
+                    if (monto > balance_inicial) begin
+                        // Fondos insuficientes
+                        fondos_insuficientes = 1;
+                        proximo_estado = idle;
+                    end else begin
+                        // Actualizar balance
+                        balance_actualizado = balance_inicial - monto;
+                        balance_stb = 1;
+                        entregar_dinero = 1;
+                        proximo_estado = idle;
+                    end
+                end else begin
+                    // Realizar retiro
+                    balance_actualizado = balance_inicial + monto;
+                    balance_stb = 1;
+                    entregar_dinero = 1;
+                    proximo_estado = idle;
+                    
+                end
             end
             default: proximo_estado = idle;
         endcase
