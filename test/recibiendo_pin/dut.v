@@ -58,8 +58,8 @@ module dut (
     always @(*) begin
 
         proximo_estado = estado_actual;
-        proximo_digito = digito;
-        proximo_intento = intento;
+        proximo_digito = digito_actual;
+        proximo_intento = intento_actual;
 
         case (estado_actual)
             idle: begin
