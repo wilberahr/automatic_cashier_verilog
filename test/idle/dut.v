@@ -4,8 +4,12 @@ module dut (
     input wire tarjeta_recibida,
     output reg fin
 );
-
-   // Declaracion de estados
+    
+    // Declaracion de variables de estado y proximo estado
+    reg [4:0] estado_actual;
+    reg [4:0] proximo_estado;
+    
+    // Declaracion de estados
     localparam idle             = 5'b00001;
     localparam recibiendo_pin   = 5'b00010;
     localparam prueba           = 5'b00100;
