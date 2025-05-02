@@ -8,25 +8,27 @@ module dut (
     output reg pin_incorrecto,
     output reg advertencia,
     output reg bloqueo,
-    output reg fin
+    output reg fin,
+    output reg [15:0] pin
 );
     // Declaracion de variables de estado y proximo estado
     reg [4:0] estado_actual;
     reg [4:0] proximo_estado;
     reg [4:0] digito_actual;
-    reg [4:0] proximo_digito;
+    //reg [4:0] proximo_digito;
     reg [4:0] intento_actual;
-    reg [4:0] proximo_intento;
+    //reg [4:0] proximo_intento;
 
     // Declaracion de registro interno que recibe el pin
     // Se declaran como 16 bits para poder almacenar el pin
-    reg [15:0] pin;
+    // reg [15:0] pin;
 
    // Declaracion de estados
     localparam idle             = 5'b00001;
     localparam recibiendo_pin   = 5'b00010;
     localparam transaccion      = 5'b00100;
-    localparam bloqueo          = 5'b01000;
+    localparam comparando_pin   = 5'b01000;
+    localparam sistema_bloqueado= 5'b10000;
     
     // Declaracion de digitos
     // Se declaran como 4 bits para poder almacenar la posicion del digito
@@ -45,12 +47,12 @@ module dut (
     always @(posedge clk) begin
         if (~reset) begin
             estado_actual <= idle;
-            digito_actual <= digito0;
-            intento_actual <= intento0; 
+            //digito_actual <= digito0;
+            //intento_actual <= intento0; 
         end else begin
             estado_actual <= proximo_estado;
-            digito_actual <= proximo_digito;
-            intento_actual <= proximo_intento;
+            //digito_actual <= proximo_digito;
+            //intento_actual <= proximo_intento;
         end
     end
 
@@ -58,16 +60,19 @@ module dut (
     always @(*) begin
 
         proximo_estado = estado_actual;
-        proximo_digito = digito_actual;
-        proximo_intento = intento_actual;
+        //proximo_digito = digito_actual;
+        //proximo_intento = intento_actual;
 
         case (estado_actual)
             idle: begin
                 // Salidas en bajo
+                pin_incorrecto = 0;
                 advertencia = 0;
                 bloqueo = 0;
                 fin = 0;
-                pin = 16'h0000;
+                pin = 16'hffff;
+                digito_actual = digito0;
+                intento_actual = intento0;
                 // Si se recibe la tarjeta, pasar al estado de recibiendo_pin
                 // Si no, permanecer en el estado idle
                 if (tarjeta_recibida) 
@@ -77,50 +82,63 @@ module dut (
             end
             recibiendo_pin: begin
 
-                
-                    if (digito_stb) begin
-                        pin = pin + digito;
-                        pin = pin << 4;
+                pin_incorrecto = 0;
+                if(digito_stb) begin
+                    pin = pin << 4;
+                    pin = pin + digito;
+                    if (digito_actual == digito3) begin
+                        digito_actual = digito0;
+                        proximo_estado = comparando_pin;
+                    end
+                    else begin
+                                              
+                        digito_actual = digito_actual << 1;
+                        proximo_estado = recibiendo_pin;
                         
-                        if (digito_actual == digito3) begin
-                            if (pin == pin_correcto) begin
-                                //Se reinicia el pin
-                                pin = 16'h0000;
-                                proximo_digito = digito0;
-                                proximo_intento = intento0;
-                                proximo_estado = transaccion;
-                            end
-                            else begin
-                                pin_incorrecto = 1;
-                                // Si el pin es incorrecto, incrementar el intento
-                                case (intento_actual)
-                                    intento0: begin
-                                        proximo_intento = intento1;
-                                    end    
-                                    intento1: begin
-                                        advertencia = 1;
-                                        proximo_intento = intento2;
-                                    end
-                                    intento2:begin
-                                        proximo_intento = intento0;
-                                        proximo_estado = bloqueo;
-                                    end
-                                    default: proximo_estado = idle;
-
-                                endcase
-                            end
-                        end else proximo_digito = digito_actual << 1;
-                    end else proximo_estado = recibiendo_pin;
+                    end
+                end else begin
+                    proximo_estado = recibiendo_pin;
+                end                            
                 
             end
+
+            comparando_pin: begin
+                if (pin == pin_correcto) begin
+ 
+                    intento_actual = intento0;
+                    proximo_estado = transaccion;
+                end
+                else begin
+                    pin_incorrecto = 1;
+                    // Si el pin es incorrecto, incrementar el intento
+                    pin = 16'hffff;
+                    if (intento_actual==intento2) begin
+                        advertencia = 0;
+                        bloqueo = 1;
+                        proximo_estado = sistema_bloqueado;
+                    end
+                    else begin
+                        if (intento_actual==intento1) begin
+                            advertencia = 1;
+                            intento_actual = intento2;
+                        end 
+                        else begin
+                            intento_actual = intento1;
+                        end
+                        proximo_estado = recibiendo_pin;
+                    end
+ 
+                end
+            end
+
             transaccion: begin
                 fin = 1;
                 proximo_estado = idle;
             end
 
-            bloqueo: begin
+            sistema_bloqueado: begin
                 bloqueo = 1;
-                proximo_estado = bloqueo;
+                proximo_estado = sistema_bloqueado;
             end
             default: proximo_estado = idle;
         endcase
