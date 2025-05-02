@@ -14,7 +14,7 @@ module tester(
 
 
     // Señal de reloj
-    always #1 clk = ~clk;
+    always #5 clk = ~clk;
 
     // Pruebas de funcionamiento
     initial begin
@@ -22,6 +22,9 @@ module tester(
         clk = 0;
         reset = 1;
         tarjeta_recibida = 1'b0;
+        balance_inicial = 64'd1000;
+        tipo_trans = 1'b0;
+        monto = 32'd0;
 
         // Aplicar reset
         #10 reset = 0;
@@ -36,12 +39,16 @@ module tester(
 
         // Pruebas del estado transaccion
         // Prueba 1: Deposito
-        
+        #10 tipo_trans = 1'b0;
+        #10 monto = 32'd100;
         // Prueba 2: Retiro
-
+        #10 tipo_trans = 1'b1;
+        #10 monto = 32'd50;
         // Prueba 3: Fondos insuficienttes
-
+        #10 tipo_trans = 1'b1;
+        #10 monto = 32'd2000;
         // Finalizar simulacion
+        #10 tarjeta_recibida = 1'b0;
         #20 $finish;
     end
 

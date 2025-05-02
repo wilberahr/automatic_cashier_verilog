@@ -47,7 +47,7 @@ module testbench;
         $dumpfile("resultados.vcd");
         $dumpvars(-1,testbench);
         $monitor(
-            "Tiempo: %0t | Reset: %b | Tarjeta  recibida: %b | Tipo de transaccion: %b | Monto: %b | Balance inicial: %b | Balance actualizado: %b | Balance stb: %b | Entregar dinero: %b | Fondos insuficientes: %b", 
+            "Tiempo: %0t | Reset: %b | Tarjeta  recibida: %b | Tipo de transaccion: %b | Monto: %d | Balance inicial: %d | Balance actualizado: %d | Balance stb: %b | Entregar dinero: %b | Fondos insuficientes: %b", 
             $time, reset, tarjeta_recibida, tipo_trans, monto, balance_inicial, balance_actualizado, balance_stb, entregar_dinero, fondos_insuficiente);
      end
 
