@@ -3,6 +3,10 @@ VERILOG = iverilog
 OFLAGS = -o 
 MDIOS = ./tools/mdios.ys
 GTKW = ./tools/resultados.gtkw
+SYNTH_TB = ./testbench/synthesis/testbench.v 
+DESIGN_TB = ./testbench/design/testbench.v
+SYNTH_VCD = resultados_synth.vcd
+DESIGN_VCD = resultados_design.vcd
 
 all: tarea
 
@@ -10,19 +14,15 @@ tarea:$(DESIGN_TB) $(SYNTH_TB) $(MDIOS) # Archivos requeridos
 	
 	$(VERILOG) $(OFLAGS) $(BUILD) $(DESIGN_TB) #Corre Icarus
 	vvp $(BUILD) # Corre la simulacion
-	gtkwave resultados_design.vcd $(GTKW) # Abre las formas de onda
+	gtkwave $(DESIGN_VCD) $(GTKW) # Abre las formas de onda
 	yosys -s $(MDIOS) # Corre sintesis
 	rm -rf $(BUILD) # Elimina la carpeta de salida
 	$(VERILOG) $(OFLAGS) $(BUILD) $(SYNTH_TB) #Corre Icarus
 	vvp $(BUILD) # Corre la simulacion
-	gtkwave resultados_synth.vcd $(GTKW) # Abre las formas de onda
+	gtkwave $(SYNTH_VCD) $(GTKW) # Abre las formas de onda
 
 clean:
-	rm -f salida *.vcd # Elimina los archivos generados
+	rm -f $(BUILD) *.vcd # Elimina los archivos generados
 
-$(MDIOS):tools/mdios.ys # Archivos requeridos
 
-$(SYNTH_TB): synthesis/testbench.v # Archivos requeridos
-
-$(DESIGN_TB): design/testbench.v # Archivos requeridos
 	
