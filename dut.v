@@ -26,7 +26,10 @@ module dut (
     reg [4:0] intento_actual;
     reg [15:0] pin;
 
+    reg [1:0] contador,intentos;
+    reg [1:0] proximo_contador, proximo_intento;
 
+    
 
     //Declaracion de estados
     localparam idle             = 5'b00001;
@@ -57,8 +60,10 @@ module dut (
     always @(posedge clk) begin
         if (~reset) begin
             estado_actual <= idle;
+            contador <= 0;
         end else begin
             estado_actual <= proximo_estado;
+            contador <= proximo_contador;
         end
     end
 
@@ -66,6 +71,8 @@ module dut (
     always @(*) begin
 
         proximo_estado = estado_actual;
+        proximo_contador = contador;
+        proximo_intento = intentos;
 
         case (estado_actual)
 
@@ -95,8 +102,26 @@ module dut (
 
                 pin_incorrecto = 0;
                 if(digito_stb) begin
-                    pin = pin << 4;
-                    pin = pin + digito;
+                    //pin = pin << 4;
+                    //pin = pin + digito;
+                    proximo_contador = contador +1;
+                    
+                    if(contador == 0)begin
+                        pin[3:0] = digito;
+                    end
+                    else if(contador == 1)begin
+                        pin[7:4] = digito;
+                    end 
+                    else if (contador == 2)begin
+                        pin[11:8] = digito;
+                    end 
+                    else if (contador == 3)begin
+                        pin[15:12] = digito;
+                        proximo_estado = comparando_pin;
+                        proximo_contador = 0;
+                    end
+                    
+                    /**
                     if (digito_actual == digito3) begin
                         digito_actual = digito0;
                         proximo_estado = comparando_pin;
@@ -106,7 +131,7 @@ module dut (
                         digito_actual = digito_actual << 1;
                         proximo_estado = recibiendo_pin;
                         
-                    end
+                    end**/
                 end else begin
                     proximo_estado = recibiendo_pin;
                 end                            
@@ -114,27 +139,36 @@ module dut (
             end
 
             comparando_pin:begin
+                proximo_intento = intentos + 1;
                 if (pin == pin_correcto) begin
- 
-                    intento_actual = intento0;
+                    proximo_intento = 0;
+                    advertencia = 0;
+                    bloqueo = 0;
+                    pin_incorrecto =0;
+                    //intento_actual = intento0;
                     proximo_estado = transaccion;
                 end
                 else begin
                     pin_incorrecto = 1;
                     // Si el pin es incorrecto, incrementar el intento
                     pin = 16'hffff;
-                    if (intento_actual==intento2) begin
+                    if (intentos == 3) begin
+                        pin_incorrecto = 0;
                         advertencia = 0;
                         bloqueo = 1;
                         proximo_estado = sistema_bloqueado;
                     end
                     else begin
-                        if (intento_actual==intento1) begin
+                        if (intentos==2) begin
                             advertencia = 1;
-                            intento_actual = intento2;
+                            bloqueo = 0;
+                            pin_incorrecto =0;
+                            //intento_actual = intento2;
                         end 
                         else begin
-                            intento_actual = intento1;
+                            advertencia = 0;
+                            bloqueo = 0;
+                            pin_incorrecto =0;
                         end
                         proximo_estado = recibiendo_pin;
                     end
