@@ -9,7 +9,6 @@ El proyecto está organizado de la siguiente manera:
 ├── src/                    # Código fuente en Verilog.
     ├── design/             # Locación del testbench.v del diseño conductual.
     ├── synthesis/          # Locación del testbench.v del diseño sintetizado.
-    ├── tester.v            # archivo de verilog para hacer las pruebas del DUT.
 ├── lib/                    # Bibliotecas utilizadas para el proceso de sintesis.
 ├── tools/                  # Archivos de configuración para visualizar simulaciones y hacer sintesis.
 ├── test/                   # Bancos de prueba para diseño y simulación los diferentes estados y el DUT completo.
@@ -24,6 +23,7 @@ El proyecto está organizado de la siguiente manera:
 ├── README.md               # Archivo README la estructura de los directorios.
 ├── dut.v                   # archivo de verilog con el diseño conductual del DUT.
 ├── dut_synth.v             # archivo de verilog con el diseño sintetizado del DUT.
+├── tester.v                # archivo de verilog para hacer las pruebas del DUT.
 ```
 
 ## Uso del Makefile
