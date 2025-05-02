@@ -42,6 +42,7 @@ module dut (
             idle: begin
                 // Salidas en bajo
                 balance_stb = 0;
+                balance_actualizado = 0;
                 entregar_dinero = 0;
                 fondos_insuficientes = 0;
                 // Si se recibe la tarjeta, pasar al estado de recibiendo_pin
@@ -66,7 +67,6 @@ module dut (
                         // Actualizar balance
                         balance_actualizado = balance_inicial - monto;
                         balance_stb = 1;
-                        entregar_dinero = 1;
                         proximo_estado = idle;
                     end
                 end else begin
