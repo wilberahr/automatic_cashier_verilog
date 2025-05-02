@@ -10,4 +10,4 @@ yosys:mdios.ys # Archivos requeridos
 	yosys -s mdios.ys # Corre sintesis 
 
 clean:
-	rm -f salida resultados.vcd # Elimina los archivos generados
+	rm -f salida *.vcd # Elimina los archivos generados
