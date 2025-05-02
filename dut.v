@@ -1,187 +1,176 @@
-module cajero(  clock,
-                reset,
-                tarjeta_recibida, 
-                tipo_trans, 
-                digito_stb, 
-                digito, 
-                pin,
-                balance_inicial, 
-                monto,
-                monto_stb,
-                balance_actualizado,
-                entregar_dinero,
-                pin_incorrecto,
-                advertencia,
-                bloqueo,
-                fondos_insuficientes
-                );
+module dut (
+    input wire clk,
+    input wire reset,
+    input wire tarjeta_recibida,
+    input wire digito_stb,
+    input wire [3:0] digito,
+    input wire [15:0] pin_correcto,
+    output reg pin_incorrecto,
+    output reg advertencia,
+    output reg bloqueo,
+    input wire tipo_trans,
+    input wire [31:0] monto,
+    input wire [63:0] balance_inicial,
+    output reg [63:0] balance_actualizado,
+    output reg balance_stb,
+    output reg entregar_dinero,
+    output reg fondos_insuficientes
+);
 
-    //Declaracion de entradas
-    input wire clock;
-    input wire reset;
-    input wire tarjeta_recibida; 
-    input wire tipo_trans; 
-    input wire digito_stb; 
-    input wire [3:0] digito; 
-    input wire [15:0] pin;
-    input wire [63:0] balance_inicial;
-    input wire [31:0] monto;
-    input wire monto_stb;
 
-    //Declaraacion de salidas
-    output reg balance_actualizado;
-    output reg entregar_dinero;
-    output reg pin_incorrecto;
-    output reg advertencia;
-    output reg bloqueo;
-    output reg fondos_insuficientes;
 
     //Declaracion de regstros internos
     reg [4:0] estado_actual;
     reg [4:0] proximo_estado;
+    reg [4:0] digito_actual;
+    reg [4:0] intento_actual;
+    reg [15:0] pin;
 
-    reg [1:0] cuenta_pin_bit;
-    reg [1:0] proxima_cuenta_pin_bit;
 
-    reg [1:0] intentos_fallidos;
-    reg [1:0] proximo_intentos_fallidos;
-
-    reg [15:0] pin_recibido;
-
-    reg [63:0] balance;
-    
-    integer cuenta_digito_bit;
-    localparam deposito = 1'b0;
-    localparam retiro = 1'b1;
 
     //Declaracion de estados
     localparam idle             = 5'b00001;
     localparam recibiendo_pin   = 5'b00010;
-    localparam comparar_pin     = 5'b00100;
+    localparam comparando_pin     = 5'b00100;
     localparam transaccion      = 5'b01000;
-    localparam bloqueo_cajero   = 5'b10000;
+    localparam sistema_bloqueado= 5'b10000;
 
-    //Declaracion de flipflops
-    always @(posedge clock) begin
-        if (reset) begin 
-            estado_actual <= 5'b00001; 
-            cuenta_pin_bit <= 2'b00;
-            intentos_fallidos <= 2'b00;
-        end //end if
-        else begin
+    // Declaracion de digitos
+    // Se declaran como 4 bits para poder almacenar la posicion del digito
+    localparam digito0          = 4'b0001;
+    localparam digito1          = 4'b0010;
+    localparam digito2          = 4'b0100;
+    localparam digito3          = 4'b1000;
+    
+    // Declaracion de intentos
+    // Se declaran como 3 bits para poder almacenar la cantidad de intentos
+    localparam intento0        = 3'b001;
+    localparam intento1        = 3'b010;
+    localparam intento2        = 3'b100;
+
+    // Declaracion de parametros para transacciones
+    // Se declaran como 1 bit para poder almacenar la transaccion
+    localparam deposito = 1'b0;
+    localparam retiro = 1'b1;
+
+    // Declaracion de estados
+    always @(posedge clk) begin
+        if (~reset) begin
+            estado_actual <= idle;
+        end else begin
             estado_actual <= proximo_estado;
-            cuenta_pin_bit <= proxima_cuenta_pin_bit;
-            intentos_fallidos <= proximo_intentos_fallidos;
-        end //end else        
-    end //end always @(posedge clock)
+        end
+    end
 
     //Declaracion de logica combinacional
     always @(*) begin
 
-        estado_actual = proximo_estado;
-        cuenta_pin_bit = proxima_cuenta_pin_bit;
-        intentos_fallidos = proximo_intentos_fallidos;
+        proximo_estado = estado_actual;
 
         case (estado_actual)
 
-            idle:   
-                begin
-                    //Todas las salidas en bajo
-                    balance_actualizado = 1'b0;
-                    entregar_dinero = 1'b0;
-                    pin_incorrecto = 1'b0;
-                    advertencia = 1'b0;
-                    bloqueo = 1'b0;
-                    fondos_insuficientes = 1'b0;
-
-                    if(tarjeta_recibida == 1) begin
-                        proximo_estado = recibiendo_pin;
-                    end // if
-                    else begin
-                        proximo_estado = idle;
-                    end // else
-                end // idle
-
-            recibiendo_pin:
-                begin
-                    //Si todavía no se ha ingresado todo el pin
-                    if(cuenta_pin_bit < 16) begin
-                        if(digito_stb == 1'b0) begin
-                            proximo_estado = recibiendo_pin;
-                        end //end if(digito_stb == 1'b0)
-                        else begin
-                            //Se recorre el digito entrante y se asigna al bit al registo de pin recibido, con los digitos anteriores
-                            for(cuenta_digito_bit = 0; cuenta_digito_bit<4; cuenta_digito_bit = cuenta_digito_bit + 1) begin
-                                pin_recibido[cuenta_pin_bit + cuenta_digito_bit] = digito[cuenta_digito_bit];
-                            end //end for
-                            //Se suma 4 bits a la cuenta de bits en el pin
-                            proxima_cuenta_pin_bit = cuenta_pin_bit + 4;
-                            proximo_estado = recibiendo_pin;
-
-                        
-                        end // else
-                    end // if(cuenta_pin_bit < 16)
-                    //Si ya se ingreso todo el pin
-                    else begin
-                        //Se reinicia el contador de digitos
-                        proxima_cuenta_pin_bit = 0;
-                        proximo_estado = comparar_pin;
-                    end //else
-
-                end // recibiendo_pin
-
-            comparar_pin:
-                begin
-                    // Se ingreso el pin correcto
-                    if(pin_recibido == pin) begin
-                        proximo_intentos_fallidos = 2'b00;
-                        proximo_estado = transaccion;
-                    end //end if
-                    else begin
-                        //Si no han habido intentos fallidos
-                        if(intentos_fallidos == 2'b00) begin
-                            pin_incorrecto = 1'b1;
-                            proximo_intentos_fallidos = intentos_fallidos + 1;
-                            proximo_estado = transaccion;
-                        end //end if
-                        // Si ha habido un intento fallido
-                        else if(intentos_fallidos == 2'b10) begin
-                            advertencia = 1'b1;
-                            proximo_intentos_fallidos = intentos_fallidos + 1;
-                            proximo_estado = transaccion;
-                        end //end else if
-                        // Si ha habido dos intentos fallidos
-                        else if(intentos_fallidos == 2'b11) begin
-                            advertencia = 1'b0;
-                            bloqueo = 1'b1;
-                            proximo_intentos_fallidos = 2'b00;
-                            proximo_estado = bloqueo_cajero;
-                        end //end else if
-                    end //end else
-                end //comparar_pin
-
-            transaccion:
-                begin
-                    //Si tipo _trans == 0, es un deposito
-                    if(tipo_trans == deposito) begin
-                        balance = balance_inicial + monto;
-                        balance_actualizado = 1'b1;
-                    end // if(tipo_trans == deposito)
-                    else begin
-                        //Si tipo _trans == 1, es un retiro Y monto es menor al balance inicial
-                        if(tipo_trans == retiro && monto <= balance_inicial) begin
-                            balance = balance_inicial - monto;
-                            balance_actualizado = 1'b1;
-                        end // if(tipo_trans == retiro && monto <= balance_inicial)
-                        else fondos_insuficientes = 1'b1;
-                    end //else
-                    proximo_estado = idle;
-                end // transaccion
-            bloqueo_cajero:
-                begin
-                    bloqueo = 1'b1;
-                    proximo_estado = bloqueo;
+            idle: begin
+                // Salidas en bajo
+                pin_incorrecto = 0;
+                advertencia = 0;
+                bloqueo = 0;
+                pin = 16'hffff;
+                digito_actual = digito0;
+                intento_actual = intento0;
+                balance_stb = 0;
+                balance_actualizado = 0;
+                entregar_dinero = 0;
+                fondos_insuficientes = 0;
+                // Si se recibe la tarjeta, pasar al estado de recibiendo_pin
+                // Si no, permanecer en el estado idle
+                if (tarjeta_recibida)begin 
+                    proximo_estado = recibiendo_pin;
                 end
+                else begin
+                    proximo_estado = idle;
+                end 
+            end
+
+            recibiendo_pin: begin
+
+                pin_incorrecto = 0;
+                if(digito_stb) begin
+                    pin = pin << 4;
+                    pin = pin + digito;
+                    if (digito_actual == digito3) begin
+                        digito_actual = digito0;
+                        proximo_estado = comparando_pin;
+                    end
+                    else begin
+                                              
+                        digito_actual = digito_actual << 1;
+                        proximo_estado = recibiendo_pin;
+                        
+                    end
+                end else begin
+                    proximo_estado = recibiendo_pin;
+                end                            
+                
+            end
+
+            comparando_pin:begin
+                if (pin == pin_correcto) begin
+ 
+                    intento_actual = intento0;
+                    proximo_estado = transaccion;
+                end
+                else begin
+                    pin_incorrecto = 1;
+                    // Si el pin es incorrecto, incrementar el intento
+                    pin = 16'hffff;
+                    if (intento_actual==intento2) begin
+                        advertencia = 0;
+                        bloqueo = 1;
+                        proximo_estado = sistema_bloqueado;
+                    end
+                    else begin
+                        if (intento_actual==intento1) begin
+                            advertencia = 1;
+                            intento_actual = intento2;
+                        end 
+                        else begin
+                            intento_actual = intento1;
+                        end
+                        proximo_estado = recibiendo_pin;
+                    end
+ 
+                end
+            end
+
+            transaccion:begin
+                
+                if (tipo_trans == retiro) begin
+                    // Realizar deposito
+                    if (monto > balance_inicial) begin
+                        // Fondos insuficientes
+                        fondos_insuficientes = 1;
+                        proximo_estado = idle;
+                    end else begin
+                        // Actualizar balance
+                        balance_actualizado = balance_inicial - monto;
+                        balance_stb = 1;
+                        proximo_estado = idle;
+                    end
+                end else begin
+                    // Realizar retiro
+                    balance_actualizado = balance_inicial + monto;
+                    balance_stb = 1;
+                    entregar_dinero = 1;
+                    proximo_estado = idle;
+                    
+                end
+            end
+
+            sistema_bloqueado: begin
+                bloqueo = 1;
+                proximo_estado = sistema_bloqueado;
+            end
+
             // Se programa el estado "idle" como el default    
             default: proximo_estado = idle;
         endcase
