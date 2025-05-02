@@ -6,7 +6,7 @@ El proyecto está organizado de la siguiente manera:
 
 ```
 /automatic_cashier_verilog
-├── src/                    # Código fuente en Verilog.
+├── testbenches/            # Código fuente en Verilog de los testbench.v.
     ├── design/             # Locación del testbench.v del diseño conductual.
     ├── synthesis/          # Locación del testbench.v del diseño sintetizado.
 ├── lib/                    # Bibliotecas utilizadas para el proceso de sintesis.
