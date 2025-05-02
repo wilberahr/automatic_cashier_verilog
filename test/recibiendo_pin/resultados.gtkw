@@ -1,0 +1,35 @@
+[*]
+[*] GTKWave Analyzer v3.3.116 (w)1999-2023 BSI
+[*] Fri May  2 02:51:08 2025
+[*]
+[dumpfile] "/home/wilberahr/Documents/Repositories/automatic_cashier_verilog/test/recibiendo_pin/resultados.vcd"
+[dumpfile_mtime] "Fri May  2 02:47:15 2025"
+[dumpfile_size] 2952
+[savefile] "/home/wilberahr/Documents/Repositories/automatic_cashier_verilog/test/recibiendo_pin/resultados.gtkw"
+[timestart] 0
+[size] 1848 837
+[pos] -27 -24
+*-4.511944 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] testbench.
+[sst_width] 278
+[signals_width] 174
+[sst_expanded] 1
+[sst_vpaned_height] 364
+@28
+testbench.clk
+testbench.reset
+testbench.tarjeta_recibida
+testbench.digito_stb
+@22
+testbench.digito[3:0]
+testbench.pin[15:0]
+@28
+testbench.pin_incorrecto
+@22
+testbench.pin_correcto[15:0]
+@28
+testbench.fin
+testbench.advertencia
+testbench.bloqueo
+[pattern_trace] 1
+[pattern_trace] 0
