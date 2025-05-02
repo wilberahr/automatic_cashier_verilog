@@ -1,7 +1,7 @@
 BUILD = ./build/salida
 VERILOG = iverilog
 OFLAGS = -o 
-MDIOS = mdios.ys
+MDIOS = ./tools/mdios.ys
 
 all: tarea
 
