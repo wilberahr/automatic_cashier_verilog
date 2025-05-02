@@ -1,4 +1,5 @@
-`include "dut.v"
+`include "../../lib/cmos_cells.v"
+`include "dut_synth.v"
 `include "tester.v"
 
 module testbench;
@@ -62,7 +63,7 @@ module testbench;
 
     // Resultados de la simulacion
     initial begin
-        $dumpfile("resultados.vcd");
+        $dumpfile("../../resultados_synth.vcd");
         $dumpvars(-1,testbench);
         $monitor(
             "Tiempo: %0t | reset: %b | digito_stb: %b | digito: %h | pin_correcto: %h | pin_incorrecto: %b | advertencia: %b | bloqueo: %b | Tipo de transaccion: %b | Monto: %d | Balance inicial: %d | Balance actualizado: %d | Balance stb: %b | Entregar dinero: %b | Fondos insuficientes: %b",
