@@ -11,6 +11,8 @@ El proyecto está organizado de la siguiente manera:
     ├── synthesis/          # Locación del testbench.v del diseño sintetizado.
 ├── lib/                    # Bibliotecas utilizadas para el proceso de sintesis.
 ├── tools/                  # Archivos de configuración para visualizar simulaciones y hacer sintesis.
+    ├── mdios.ys            # Archivo de configuracion para ejecutar con Yosys.
+    ├── resultados.gtkw     # Archivo .gtkw donde se guardan las señales a visualizar de la simulación.
 ├── test/                   # Bancos de prueba para diseño y simulación los diferentes estados y el DUT completo.
     ├──idle                 # Unit test del estado "idle"
     ├──recibiendo_pin       # Unit test del estado "recibiendo_pin", adicionalmente se probaron "comparando_pin" y "sistema_bloqueado"
