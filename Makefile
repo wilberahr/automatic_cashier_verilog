@@ -1,28 +1,34 @@
-BUILD = ./build/salida
-VERILOG = iverilog
-OFLAGS = -o 
-MDIOS = ./tools/mdios.ys
-GTKW = ./tools/resultados.gtkw
-SYNTH_TB = ./testbench/synthesis/testbench.v 
-DESIGN_TB = ./testbench/design/testbench.v
-SYNTH_VCD = resultados_synth.vcd
-DESIGN_VCD = resultados_design.vcd
+CFLAGS += -I. -I./lib
+DEPS_DESIGN += dut.v tester.v
+DEPS_SYNTHESIS += dut_synth.v tester.v
+GTKW_FILE = resultados
+BUILD_DIR = build
+TOOLS_DIR = tools
 
 all: tarea
 
-tarea:$(DESIGN_TB) $(SYNTH_TB) $(MDIOS) # Archivos requeridos
+tarea: design.vcd synthesis.vcd
+		
+design.vcd: design
+	vvp $(BUILD_DIR)/$<
+#	gtkwave $@ $(GTKW_FILE).gtkw
 	
-	$(VERILOG) $(OFLAGS) $(BUILD) $(DESIGN_TB) #Corre Icarus
-	vvp $(BUILD) # Corre la simulacion
-	gtkwave $(DESIGN_VCD) $(GTKW) # Abre las formas de onda
-	yosys -s $(MDIOS) # Corre sintesis
-	rm -rf $(BUILD) # Elimina la carpeta de salida
-	$(VERILOG) $(OFLAGS) $(BUILD) $(SYNTH_TB) #Corre Icarus
-	vvp $(BUILD) # Corre la simulacion
-	gtkwave $(SYNTH_VCD) $(GTKW) # Abre las formas de onda
+	
+design:  $(DEPS_DESIGN)
+	iverilog -o $(BUILD_DIR)/$@ testbenches/design/testbench.v $(CFLAGS)
+
+synthesis.vcd: synthesis design.vcd
+	vvp $(BUILD_DIR)/$<
+	gtkwave $@ $(GTKW_FILE).gtkw
+
+
+synthesis: $(DEPS_SYNTHESIS)
+	iverilog -o $(BUILD_DIR)/$@ testbenches/synthesis/testbench.v $(CFLAGS)
+
+dut_synth.v: 
+	yosys -s $(TOOLS_DIR)/mdios.ys
 
 clean:
-	rm -f $(BUILD) *.vcd # Elimina los archivos generados
-
-
-	
+	rm -f $(BUILD_DIR)/*
+	rm -f *.vcd
+	rm -f dut_synth.v
