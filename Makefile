@@ -30,7 +30,7 @@ design:  $(DEPS_DESIGN)
 	iverilog -o $(BUILD_DIR)/$@ testbenches/design/testbench.v $(CFLAGS)
 
 # Generar la simulación de síntesis
-synthesis.vcd: synthesis design.vcd
+synthesis.vcd: synthesis
 	vvp $(BUILD_DIR)/$<
 	gtkwave $@ $(GTKW_FILE).gtkw
 
@@ -46,7 +46,7 @@ dut_synth.v:
 
 #Despleiga la simulación de diseño por comportamiento
 view_design_sim: 
-	gtkwave $@ $(GTKW_FILE).gtkw
+	gtkwave design.vcd $(GTKW_FILE).gtkw
 
 # Borra los archivos compilados y generados por las herramientas
 # de simulación y síntesis

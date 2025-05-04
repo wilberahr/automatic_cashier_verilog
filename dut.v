@@ -23,6 +23,7 @@ module dut (
     reg [4:0] estado_actual;
     reg [4:0] proximo_estado;
     reg [15:0] pin;
+    reg [15:0] proximo_pin;
 
     reg [1:0] contador,intentos;
     reg [1:0] proximo_contador, proximo_intento;
@@ -44,9 +45,13 @@ module dut (
         if (~reset) begin
             estado_actual <= idle;
             contador <= 0;
+            intentos <= 0;
+            pin <= 15'hfff;
         end else begin
             estado_actual <= proximo_estado;
             contador <= proximo_contador;
+            intentos <= proximo_intento;
+            pin <= proximo_pin;
         end
     end
 
@@ -56,6 +61,7 @@ module dut (
         proximo_estado = estado_actual;
         proximo_contador = contador;
         proximo_intento = intentos;
+        proximo_pin = pin;
 
         case (estado_actual)
 
@@ -64,7 +70,6 @@ module dut (
                 pin_incorrecto = 0;
                 advertencia = 0;
                 bloqueo = 0;
-                pin = 16'hffff;
                 balance_stb = 0;
                 balance_actualizado = 0;
                 entregar_dinero = 0;
@@ -86,16 +91,16 @@ module dut (
                     proximo_contador = contador +1;
                     
                     if(contador == 0)begin
-                        pin[3:0] = digito;
+                        proximo_pin[15:12] = digito;
                     end
                     else if(contador == 1)begin
-                        pin[7:4] = digito;
+                        proximo_pin[11:8] = digito;
                     end 
                     else if (contador == 2)begin
-                        pin[11:8] = digito;
+                        proximo_pin[7:4] = digito;
                     end 
                     else if (contador == 3)begin
-                        pin[15:12] = digito;
+                        proximo_pin[3:0] = digito;
                         proximo_estado = comparando_pin;
                         proximo_contador = 0;
                     end
@@ -118,9 +123,8 @@ module dut (
                 else begin
                     pin_incorrecto = 1;
                     // Si el pin es incorrecto, incrementar el intento
-                    pin = 16'hffff;
                     if (intentos == 3) begin
-                        pin_incorrecto = 0;
+                        pin_incorrecto = 1;
                         advertencia = 0;
                         bloqueo = 1;
                         proximo_estado = sistema_bloqueado;
@@ -129,8 +133,13 @@ module dut (
                         if (intentos==2) begin
                             advertencia = 1;
                             bloqueo = 0;
-                            pin_incorrecto =0;
+                            pin_incorrecto =1;
                         end 
+                        else if (intentos==1) begin
+                            advertencia = 0;
+                            bloqueo = 0;
+                            pin_incorrecto =1;
+                        end
                         else begin
                             advertencia = 0;
                             bloqueo = 0;
@@ -148,23 +157,34 @@ module dut (
                     // Realizar deposito
                     if (monto > balance_inicial) begin
                         // Fondos insuficientes
+                        balance_actualizado = 0;
+                        balance_stb = 0;
+                        entregar_dinero = 0;
                         fondos_insuficientes = 1;
                         proximo_estado = idle;
                     end else begin
                         // Actualizar balance
                         balance_actualizado = balance_inicial - monto;
                         balance_stb = 1;
+                        fondos_insuficientes = 0;
                         proximo_estado = idle;
+                        entregar_dinero = 1;
                     end
                 end else begin
-                    // Realizar retiro
+                    // Realizar depósito
                     balance_actualizado = balance_inicial + monto;
                     balance_stb = 1;
-                    entregar_dinero = 1;
+                    entregar_dinero = 0;
                     proximo_estado = idle;
+                    fondos_insuficientes = 0;
                     
                 end
             end
+
+//            finalizado: begin
+//                proximo_estado = idle;
+ //                
+  //          end
 
             sistema_bloqueado: begin
                 bloqueo = 1;

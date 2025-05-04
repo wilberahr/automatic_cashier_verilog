@@ -14,7 +14,8 @@ module tester(
     input wire [63:0] balance_actualizado,
     input wire balance_stb,
     input wire entregar_dinero,
-    input wire fondos_insuficientes
+    input wire fondos_insuficientes,
+    input wire [15:0] pin
 );
 
 
@@ -89,7 +90,7 @@ module tester(
                 digito = 4'hf;
             end    
         end
-
+        #20
         // Aplicar reset
         #10 reset = 0;
         #10 reset = 1;
@@ -99,6 +100,7 @@ module tester(
         // Prueba 1: Deposito
         #10 tipo_trans = 1'b0;
         #10 monto = 32'd100;
+        #10 tarjeta_recibida = 1'b1;
 
         // Ingresar pin correcto
         #10     
@@ -127,13 +129,13 @@ module tester(
         digito_stb = 1'b0;
         digito = 4'hf;
 
-        // Aplicar reset
-        #10 reset = 0;
-        #10 reset = 1;
+        #40
+
 
         // Prueba 2: Retiro
         #10 tipo_trans = 1'b1;
         #10 monto = 32'd50;
+        #10 tarjeta_recibida = 1'b1;
 
         // Ingresar pin correcto
         #10     
@@ -162,14 +164,12 @@ module tester(
         digito_stb = 1'b0;
         digito = 4'hf;
 
-        // Aplicar reset
-        #10 reset = 0;
-        #10 reset = 1;
+        #40
 
         // Prueba 3: Fondos insuficienttes
         #10 tipo_trans = 1'b1;
         #10 monto = 32'd2000;
-
+        #10 tarjeta_recibida = 1'b1;
         // Ingresar pin correcto
         #10     
         digito_stb = 1'b1;
@@ -197,9 +197,7 @@ module tester(
         digito_stb = 1'b0;
         digito = 4'hf;
 
-        // Aplicar reset
-        #10 reset = 0;
-        #10 reset = 1;
+
 
         // Finalizar simulacion
         #10 tarjeta_recibida = 1'b0;
