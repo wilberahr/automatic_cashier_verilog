@@ -65,8 +65,6 @@ module dut (
                 advertencia = 0;
                 bloqueo = 0;
                 pin = 16'hffff;
-                digito_actual = digito0;
-                intento_actual = intento0;
                 balance_stb = 0;
                 balance_actualizado = 0;
                 entregar_dinero = 0;
