@@ -22,34 +22,17 @@ module dut (
     //Declaracion de regstros internos
     reg [4:0] estado_actual;
     reg [4:0] proximo_estado;
-    reg [4:0] digito_actual;
-    reg [4:0] intento_actual;
     reg [15:0] pin;
 
     reg [1:0] contador,intentos;
     reg [1:0] proximo_contador, proximo_intento;
 
-    
-
     //Declaracion de estados
     localparam idle             = 5'b00001;
     localparam recibiendo_pin   = 5'b00010;
-    localparam comparando_pin     = 5'b00100;
+    localparam comparando_pin   = 5'b00100;
     localparam transaccion      = 5'b01000;
     localparam sistema_bloqueado= 5'b10000;
-
-    // Declaracion de digitos
-    // Se declaran como 4 bits para poder almacenar la posicion del digito
-    localparam digito0          = 4'b0001;
-    localparam digito1          = 4'b0010;
-    localparam digito2          = 4'b0100;
-    localparam digito3          = 4'b1000;
-    
-    // Declaracion de intentos
-    // Se declaran como 3 bits para poder almacenar la cantidad de intentos
-    localparam intento0        = 3'b001;
-    localparam intento1        = 3'b010;
-    localparam intento2        = 3'b100;
 
     // Declaracion de parametros para transacciones
     // Se declaran como 1 bit para poder almacenar la transaccion
@@ -102,8 +85,6 @@ module dut (
 
                 pin_incorrecto = 0;
                 if(digito_stb) begin
-                    //pin = pin << 4;
-                    //pin = pin + digito;
                     proximo_contador = contador +1;
                     
                     if(contador == 0)begin
@@ -120,18 +101,7 @@ module dut (
                         proximo_estado = comparando_pin;
                         proximo_contador = 0;
                     end
-                    
-                    /**
-                    if (digito_actual == digito3) begin
-                        digito_actual = digito0;
-                        proximo_estado = comparando_pin;
-                    end
-                    else begin
-                                              
-                        digito_actual = digito_actual << 1;
-                        proximo_estado = recibiendo_pin;
-                        
-                    end**/
+  
                 end else begin
                     proximo_estado = recibiendo_pin;
                 end                            
@@ -145,7 +115,6 @@ module dut (
                     advertencia = 0;
                     bloqueo = 0;
                     pin_incorrecto =0;
-                    //intento_actual = intento0;
                     proximo_estado = transaccion;
                 end
                 else begin
@@ -163,7 +132,6 @@ module dut (
                             advertencia = 1;
                             bloqueo = 0;
                             pin_incorrecto =0;
-                            //intento_actual = intento2;
                         end 
                         else begin
                             advertencia = 0;
